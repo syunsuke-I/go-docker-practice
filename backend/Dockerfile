@@ -9,7 +9,11 @@ COPY backend/go.sum .
 RUN go mod download
 RUN apk add --no-cache gcc
 RUN apk add --no-cache musl-dev
+RUN go mod download
 
 COPY ./backend .
+
+# go get github.com/lib/pq
+CMD ["go", "get", "github.com/lib/pq"]
 
 

@@ -1,5 +1,8 @@
 version: "3.3"
 
+volumes:
+  pg-data:
+
 services:
   backend:
     build:
@@ -9,3 +12,15 @@ services:
       - 8080:8080
     volumes:
       - ./backend:/app
+  postgres:
+    container_name: postgres
+    image: postgres:15.3
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_ROOT_PASSWORD=root
