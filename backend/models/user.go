@@ -20,8 +20,21 @@ type UserData struct {
 }
 
 func (u *User) CreateUser() error {
+
+	// トランザクションを開始
+	tx, err := Db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
 	cmd := `INSERT INTO users(age, name, role) VALUES ($1, $2, $3)`
-	_, err := Db.Exec(cmd,
+	_, err = tx.Exec(cmd,
 		u.Age,
 		u.Name,
 		u.Role,
@@ -30,6 +43,6 @@ func (u *User) CreateUser() error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return tx.Commit()
 
 }

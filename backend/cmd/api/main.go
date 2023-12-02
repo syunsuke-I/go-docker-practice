@@ -47,7 +47,7 @@ func main() {
 			Role: userData.User.Role,
 		}
 		err = user.CreateUser()
-
+		defer models.Db.Close()
 		if err != nil {
 			// エラーの処理
 			log.Println("ユーザー作成エラー:", err)
