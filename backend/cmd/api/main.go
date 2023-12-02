@@ -36,6 +36,8 @@ func main() {
 		log.Fatalln("ファイル情報をDBへ書き込む処理が失敗しました")
 	}
 
+	defer models.Db.Close()
+
 }
 
 func getFileInfo(filename string) (*os.File, error) {
