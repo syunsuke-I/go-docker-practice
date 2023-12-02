@@ -21,24 +21,41 @@ func main() {
 
 	// コマンドライン引数からファイル名を取得
 	filename := os.Args[1]
+	// ファイル名を元にファイル情報を取得
+	file, err := getFileInfo(filename)
+	if err != nil {
+		log.Fatalln("ファイル情報が取得できませんでした")
+	}
+	defer file.Close()
 
+	// DBの初期化および接続
+	models.Init()
+
+	err = insertUsersFromFile(file)
+	if err != nil {
+		log.Fatalln("ファイル情報をDBへ書き込む処理が失敗しました")
+	}
+
+}
+
+func getFileInfo(filename string) (*os.File, error) {
 	// ファイルをオープン
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("ファイルを開けません:", err)
-		os.Exit(1)
+		return nil, err
 	}
-	defer file.Close()
+	return file, nil
+}
 
-	models.Init()
-
+func insertUsersFromFile(file *os.File) error {
 	// ファイルの内容を一行ずつ読み込む
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		var userData models.UserData
 		err := json.Unmarshal(scanner.Bytes(), &userData)
 		if err != nil {
-			fmt.Println("JSONの解析エラー:", err)
+			log.Println("JSONの解析エラー:", err)
 			continue
 		}
 		user := models.User{
@@ -47,9 +64,7 @@ func main() {
 			Role: userData.User.Role,
 		}
 		err = user.CreateUser()
-		defer models.Db.Close()
 		if err != nil {
-			// エラーの処理
 			log.Println("ユーザー作成エラー:", err)
 		}
 		// ユーザーデータを出力
@@ -58,7 +73,9 @@ func main() {
 
 	// スキャン中にエラーが発生したか確認
 	if err := scanner.Err(); err != nil {
-		fmt.Println("ファイルの読み込みエラー:", err)
-		os.Exit(1)
+		log.Println("ファイルの読み込みエラー:", err)
+		return err
 	}
+
+	return nil
 }
