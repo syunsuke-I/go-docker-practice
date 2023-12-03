@@ -1,4 +1,4 @@
-module backend
+module go-docker-practice
 
 go 1.19
 
